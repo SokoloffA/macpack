@@ -1,0 +1,73 @@
+---
+app-name: TestApplication
+version: 0.0.1
+
+modules:
+
+  - name: PerResultFiles
+    steps:
+
+      - command: sh -c 'echo "file 1" > Binary'
+      - command: chmod 755 Binary
+
+      - command: sh -c 'echo "02 src array 1" > 02_src_array1.txt'
+      - command: sh -c 'echo "02 src array 2" > 02_src_array2.txt'
+      - command: chmod 664 02_src_array1.txt 02_src_array2.txt
+
+      - command: sh -c 'echo "glob 1" > glob-file1.txt'
+      - command: sh -c 'echo "glob 2" > glob-file2.txt'
+      - command: sh -c 'echo "glob 1" > glob-file1.md'
+      - command: chmod 664 glob-file1.txt glob-file2.txt glob-file1.md
+
+      - command: mkdir -p "04_subdirs"
+      - command: sh -c 'echo "subdirs 1" > 04_subdirs/file_1.txt'
+      - command: sh -c 'echo "subdirs 2" > 04_subdirs/file_2.txt'
+      - command: chmod 664 04_subdirs/file_1.txt 04_subdirs/file_2.txt
+
+      - command: sh -c 'echo "05_rename" > 05_oldname.txt'
+      - command: chmod 664 05_oldname.txt
+
+      - command: sh -c 'echo "06_permissions_753" > 06.1_permissions_753'
+      - command: chmod 753 06.1_permissions_753
+      - command: sh -c 'echo "06_permissions_753" > 06.2_permissions_753'
+      - command: chmod 777 06.2_permissions_753
+
+      - command: sh -c 'echo "07_env_BIN_DIR" > 07_env_BIN_DIR.txt'
+      - command: chmod 664 07_env_BIN_DIR.txt
+
+    results:
+      - source: Binary
+        destination: MacOS
+
+      - sources: [02_src_array1.txt, 02_src_array2.txt]
+        destination: 02.1_SrcArray
+
+      - sources:
+        - 02_src_array1.txt
+        - 02_src_array2.txt
+        destination: 02.2_SrcArray
+
+      - source: glob-file?.*
+        destination: 03_glob
+
+      - source: 04_subdirs/*
+        destination: 04_subdirs
+
+      - source: 04_subdirs/*
+        destination: 05_subdirs
+
+      - source: 05_oldname.txt
+        destination: .
+        rename: 05_rename.txt
+
+      - source: 06.1_permissions_753
+        destination: 06_permissions
+
+      - source: 06.2_permissions_753
+        destination: 06_permissions
+        permission: 753
+
+      - source: 07_env_BIN_DIR.txt
+        destination: ${BIN_DIR}
+
+

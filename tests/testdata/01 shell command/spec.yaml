@@ -1,0 +1,13 @@
+---
+app-name: OUT
+version: 0.0.1
+
+modules:
+  - name: Test
+    steps:
+      - command: sh -c 'echo "Test" > out_file.txt'
+      - command: chmod 644 out_file.txt
+
+    results:
+      - source: out_file.txt
+        destination: .
