@@ -141,7 +141,36 @@ func check(actualDir, expectedDir string) error {
 	return nil
 }
 
+func runExpectedScript(testDir, workDir string) error {
+
+	scriptFile := testDir + "/expected.sh"
+	expectedDir := workDir + "/expected"
+
+	if err := os.MkdirAll(expectedDir, 0777); err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(scriptFile); os.IsNotExist(err) {
+		return fmt.Errorf(`File "%s" not found`, scriptFile)
+	}
+
+	cmd := exec.Command("/bin/sh", scriptFile)
+	cmd.Dir = expectedDir
+
+	if verbose {
+		cmd.Stdout = os.Stdout
+	}
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func runTest(binPath, testDir, workDir string) error {
+
 	//	name := filepath.Base(testDir)
 
 	prevDir, err := os.Getwd()
@@ -154,13 +183,20 @@ func runTest(binPath, testDir, workDir string) error {
 		return err
 	}
 
+	if err := os.RemoveAll(workDir); err != nil {
+		return fmt.Errorf(`can't remove directory "%s":\n  %s`, workDir, err)
+	}
+
 	if err := os.MkdirAll(workDir, 0777); err != nil {
 		return err
 	}
 
-	// specFile := testDir + "/test.spec"
+	if err := runExpectedScript(testDir, workDir); err != nil {
+		return err
+	}
+	// scriptFile := testDir + "/expected.sh"
 
-	// data, err := ioutil.ReadFile(specFile)
+	// data, err := ioutil.ReadFile(scriptFile)
 	// if err != nil {
 	// 	return err
 	// }
@@ -203,14 +239,14 @@ func runTest(binPath, testDir, workDir string) error {
 		return err
 	}
 
-	expDirs, err := filepath.Glob(testDir + "/expected/*.app")
+	appDirs, err := filepath.Glob(workDir + "/*.app")
 	if err != nil {
 		return nil
 	}
 
-	for _, exp := range expDirs {
-		name := filepath.Base(exp)
-		err := check(workDir+"/"+name, testDir+"/expected/"+name)
+	if len(appDirs) > 0 {
+		name := filepath.Base(appDirs[0])
+		err := check(workDir+"/"+name, workDir+"/expected")
 		if err != nil {
 			return err
 		}

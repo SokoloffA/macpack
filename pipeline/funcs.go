@@ -140,7 +140,6 @@ func copyFileWithPerm(src, dest string, perm os.FileMode) error {
 }
 
 func deletDir(dir string) error {
-	//fmt.Println("DELETE:", dir)
 	if err := os.RemoveAll(dir); err != nil {
 		return fmt.Errorf(`can't remove directory "%s":\n  %s`, dir, err)
 	}
